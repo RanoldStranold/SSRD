@@ -10,6 +10,7 @@ modId = "${mod_id}"
 version = "${mod_version}"
 displayName = "${mod_name}"
 authors = "${mod_authors}"
+logoFile = "ssrd_logo.png"
 
 description = '''
 This mod re-writes the Sable mod to allow for physics objects (Aeronautics Planes!) to render further out than the normal view distance when using Distant Horizons.
