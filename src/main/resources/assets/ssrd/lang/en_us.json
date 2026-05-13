@@ -1,0 +1,5 @@
+{
+  "ssrd.options.physics_render_distance.name": "Sub-Level Distance",
+  "ssrd.options.physics_render_distance.tooltip": "Sets the maximum distance (in chunks) at which Sub-Levels will be rendered. The maximum value of this slider is determined by your Distant Horizons LOD render distance.",
+  "ssrd.options.server_max": "Server Max"
+}

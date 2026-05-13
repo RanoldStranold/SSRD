@@ -1,0 +1,36 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.ranold.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "SubLevelTrackingSystemMixin",
+    "SubLevelHoldingChunkMapMixin"
+  ],
+  "client": [
+    "RenderSectionManagerMixin",
+    "SodiumGameOptionPagesMixin",
+    "OptionPageAccessor",
+    "OptionGroupAccessor",
+    "SubLevelRenderSectionManagerMixin",
+    "VanillaFrustumMixin",
+    "OcclusionCullerMixin",
+    "SodiumDispatcherMixin",
+    "DHVanillaFadeAccessor",
+    "SodiumViewportMixin",
+    "RenderSystemFogMixin",
+    "LevelRendererMixin",
+    "MinecraftLoadingMixin",
+    "VanillaDispatcherMixin",
+    "GameRendererProjMixin",
+    "DHShaderBypassMixin",
+    "DHShaderSourceMixin",
+    "DHBlazeApplyDepthFixMixin",
+    "DHRenderUtilProjMixin"
+  ],
+  "server": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
