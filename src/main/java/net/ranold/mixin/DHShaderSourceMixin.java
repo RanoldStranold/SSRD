@@ -11,25 +11,23 @@ public abstract class DHShaderSourceMixin {
 
     @Inject(method = "loadFile", at = @At("RETURN"), cancellable = true)
     private static void ssd$injectDepthOutput(String path, boolean absolute, CallbackInfoReturnable<String> cir) {
-        if (path != null && (path.contains("apply") || path.contains("frag"))) {
+        if (path != null && path.contains("vanilla_fade")) {
             String source = cir.getReturnValue();
 
-            if (source != null) {
-                // Common replacement logic for any apply frag shader
-                if (source.contains("fragColor = texture(uSourceColorTexture") && source.contains("uSourceDepthTexture")) {
-                    String injected = source.replace(
-                        "fragColor = texture(uSourceColorTexture, TexCoord);",
-                        "gl_FragDepth = texture(uSourceDepthTexture, TexCoord).r;\n        fragColor = texture(uSourceColorTexture, TexCoord);"
-                    );
-                    cir.setReturnValue(injected);
-                }
-                else if (source.contains("fragColor = texture(gDhColorTexture") && source.contains("gDhDepthTexture")) {
-                    String injected = source.replace(
-                        "fragColor = texture(gDhColorTexture, TexCoord);",
-                        "gl_FragDepth = texture(gDhDepthTexture, TexCoord).r;\n        fragColor = texture(gDhColorTexture, TexCoord);"
-                    );
-                    cir.setReturnValue(injected);
-                }
+            if (source != null && source.contains("fragColor = mix(combinedMcDhColor, dhColor, fadeStep);")) {
+                // To allow Sable SubLevels to render beyond vanilla chunks without being faded out by DH,
+                // we inject custom logic to check if the vanilla fragment is significantly closer than the DH fragment.
+                String injected = source.replace(
+                    "fragColor = mix(combinedMcDhColor, dhColor, fadeStep);",
+                    "if (mcFragmentDistance > uEndFadeBlockDistance) {\n" +
+                    "            float dhDist = length(dhVertexWorldPos.xzy);\n" +
+                    "            if (mcFragmentDistance < dhDist - 2.0) {\n" +
+                    "                fadeStep = 0.0;\n" +
+                    "            }\n" +
+                    "        }\n" +
+                    "        fragColor = mix(combinedMcDhColor, dhColor, fadeStep);"
+                );
+                cir.setReturnValue(injected);
             }
         }
     }
