@@ -26,6 +26,27 @@ side = "BOTH"
 [[dependencies."${mod_id}"]]
 modId = "minecraft"
 type = "required"
-versionRange = "${minecraft_version_range}"
+versionRange = "[1.21.1]"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies."${mod_id}"]]
+modId = "sodium"
+type = "required"
+versionRange = "[0,)"
+ordering = "NONE"
+side = "CLIENT"
+
+[[dependencies."${mod_id}"]]
+modId = "distanthorizons"
+type = "required"
+versionRange = "[0,)"
+ordering = "NONE"
+side = "CLIENT"
+
+[[dependencies."${mod_id}"]]
+modId = "sable"
+type = "required"
+versionRange = "[0,)"
 ordering = "NONE"
 side = "BOTH"

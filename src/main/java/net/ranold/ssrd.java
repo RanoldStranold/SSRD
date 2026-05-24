@@ -33,7 +33,7 @@ public class ssrd {
         modEventBus.addListener(this::registerPayloads);
         
         NeoForge.EVENT_BUS.register(this);
-        LOGGER.info("SSRD: Initialized v0.2.5 (Standard Mode)");
+        LOGGER.info("SSRD: Initialized v0.5 (Standard Mode)");
     }
 
     private void registerPayloads(final RegisterPayloadHandlersEvent event) {
