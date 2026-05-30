@@ -3,6 +3,7 @@ package net.ranold.mixin;
 import net.caffeinemc.mods.sodium.client.render.chunk.RenderSection;
 import net.caffeinemc.mods.sodium.client.render.chunk.occlusion.OcclusionCuller;
 import net.caffeinemc.mods.sodium.client.render.viewport.Viewport;
+import net.minecraft.network.chat.Component;
 import net.ranold.SSRDState;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class OcclusionCullerMixin {
 
     static {
-        com.mojang.logging.LogUtils.getLogger().info("SSRD: OcclusionCullerMixin loaded");
+        com.mojang.logging.LogUtils.getLogger().info(Component.translatable("ssrd.log.occlusion_culler_mixin_loaded").getString());
     }
 
     @Shadow @Final private it.unimi.dsi.fastutil.longs.Long2ReferenceMap<RenderSection> sections;

@@ -11,7 +11,7 @@ group = mod_group_id
 repositories {
     mavenLocal()
     flatDir {
-        dirs 'run/mods'
+        dirs 'libs'
     }
 }
 
@@ -47,7 +47,7 @@ neoForge {
 }
 
 dependencies {
-    implementation "blank:sodium-neoforge:0.6.13+mc1.21.1"
+    implementation "blank:[钠] sodium-neoforge-0.6.13+mc1.21.1"
     implementation "blank:sable-neoforge:1.21.1-1.2.2"
     implementation "blank:DistantHorizons:3.0.3-b-1.21.1-fabric-neoforge"
 }

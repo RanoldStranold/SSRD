@@ -49,8 +49,8 @@ public class SodiumGameOptionPagesMixin {
             if (current > finalMax) current = finalMax;
             
             OptionImpl<Void, Integer> physicsDistanceOption = OptionImpl.createBuilder(int.class, SSRD_STORAGE)
-                    .setName(Component.literal("Physics Render Distance"))
-                    .setTooltip(Component.literal("The render distance for physics objects (SubLevels). The max for this slider is the set distance in the DH settings."))
+                    .setName(Component.translatable("ssrd.options.physics_render_distance.name"))
+                    .setTooltip(Component.translatable("ssrd.options.physics_render_distance.tooltip"))
                     .setControl(option -> new SliderControl(option, 16, finalMax, 1, ControlValueFormatter.translateVariable("options.chunks")))
                     .setBinding((storage, value) -> {
                         Config.setPhysicsRenderDistance(value);

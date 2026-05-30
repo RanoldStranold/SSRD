@@ -1,6 +1,7 @@
 package net.ranold.mixin;
 
 import dev.ryanhcode.sable.SableConfig;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import org.joml.Vector3dc;
@@ -32,7 +33,9 @@ public class SubLevelTrackingSystemMixin {
 
         boolean result = distSq < range * range;
         if (result && distSq > 320 * 320) {
-            com.mojang.logging.LogUtils.getLogger().debug("SSRD: Allowing distant tracking for sub-level at {} for player {} (Range: {})", entityPosition, player.getName().getString(), range);
+            com.mojang.logging.LogUtils.getLogger().debug(
+                    Component.translatable("ssrd.log.allow_distant_tracking_sublevel", entityPosition, player.getName().getString(), range).getString()
+            );
         }
         cir.setReturnValue(result);
     }

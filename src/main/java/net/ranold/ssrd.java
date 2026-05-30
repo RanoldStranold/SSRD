@@ -1,5 +1,6 @@
 package net.ranold;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
@@ -31,9 +32,9 @@ public class ssrd {
     public ssrd(IEventBus modEventBus, ModContainer modContainer) {
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
         modEventBus.addListener(this::registerPayloads);
-        
+
         NeoForge.EVENT_BUS.register(this);
-        LOGGER.info("SSRD: Initialized v0.5 (Standard Mode)");
+        LOGGER.info(Component.translatable("ssrd.log.initialized").getString());
     }
 
     private void registerPayloads(final RegisterPayloadHandlersEvent event) {

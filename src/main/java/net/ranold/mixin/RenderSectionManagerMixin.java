@@ -5,6 +5,7 @@ import net.caffeinemc.mods.sodium.client.render.chunk.RenderSection;
 import net.caffeinemc.mods.sodium.client.render.chunk.ChunkRenderMatrices;
 import net.caffeinemc.mods.sodium.client.render.chunk.terrain.TerrainRenderPass;
 import net.minecraft.client.Camera;
+import net.minecraft.network.chat.Component;
 import net.ranold.SSRDState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -17,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class RenderSectionManagerMixin {
 
     static {
-        com.mojang.logging.LogUtils.getLogger().info("SSRD: RenderSectionManagerMixin loaded");
+        com.mojang.logging.LogUtils.getLogger().info(Component.translatable("ssrd.log.render_section_manager_mixin_loaded").getString());
     }
 
     @Shadow(remap = false) private int lastUpdatedFrame;
@@ -60,7 +61,9 @@ public abstract class RenderSectionManagerMixin {
     private void ssd$overrideSearchDistance(CallbackInfoReturnable<Float> cir) {
         if (SSRDState.IS_SUBLEVEL_RENDER.get()) {
             float dist = (float) net.ranold.Config.physicsRenderDistance * 16.0f;
-            com.mojang.logging.LogUtils.getLogger().debug("SSRD: Overriding Search Distance to {}", dist);
+            com.mojang.logging.LogUtils.getLogger().debug(
+                    Component.translatable("ssrd.log.override_search_distance", dist).getString()
+            );
             cir.setReturnValue(dist);
         }
     }

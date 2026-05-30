@@ -1,5 +1,6 @@
 package net.ranold.mixin;
 
+import net.minecraft.network.chat.Component;
 import net.ranold.SSRDState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -10,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class SodiumDispatcherMixin {
 
     static {
-        com.mojang.logging.LogUtils.getLogger().info("SSRD: SodiumDispatcherMixin loaded");
+        com.mojang.logging.LogUtils.getLogger().info(Component.translatable("ssrd.log.sodium_dispatcher_mixin_loaded").getString());
     }
 
     @Inject(method = "updateCulling", at = @At("HEAD"))

@@ -11,7 +11,7 @@ public class ConfigScreen extends Screen {
     private final Screen lastScreen;
 
     public ConfigScreen(Screen lastScreen) {
-        super(Component.literal("SSRD Physics Settings (Outdated, use sodium video settings instead)"));
+        super(Component.translatable("ssrd.screen.config.title"));
         this.lastScreen = lastScreen;
     }
 
@@ -23,13 +23,13 @@ public class ConfigScreen extends Screen {
         int startY = 60;
 
         // Display current distance
-        Component currentText = Component.literal("Current: " + Config.physicsRenderDistance + " chunks");
+        Component currentText = Component.translatable("ssrd.ui.current_distance", Config.physicsRenderDistance);
         
         // Buttons for distances
         int[] distances = {32, 64, 128, 256, 512, 1024};
         for (int i = 0; i < distances.length; i++) {
             int dist = distances[i];
-            this.addRenderableWidget(Button.builder(Component.literal(dist + " Chunks"), (button) -> {
+            this.addRenderableWidget(Button.builder(Component.translatable("ssrd.ui.button.chunk_count", dist), (button) -> {
                 Config.setPhysicsRenderDistance(dist);
                 this.rebuildWidgets(); // Refresh text
             }).bounds(centerX - 100, startY + (i * 24), 200, 20).build());
@@ -44,7 +44,9 @@ public class ConfigScreen extends Screen {
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
         guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 20, 16777215);
-        guiGraphics.drawCenteredString(this.font, "Current: " + Config.physicsRenderDistance + " chunks", this.width / 2, 40, 0xFFFFFF);
+        // 复用已有翻译键，通过 getString() 转为字符串供绘制使用
+        String currentDistText = Component.translatable("ssrd.ui.current_distance", Config.physicsRenderDistance).getString();
+        guiGraphics.drawCenteredString(this.font, currentDistText, this.width / 2, 40, 0xFFFFFF);
     }
 
     @Override

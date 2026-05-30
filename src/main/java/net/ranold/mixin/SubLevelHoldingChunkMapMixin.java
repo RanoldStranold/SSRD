@@ -1,5 +1,6 @@
 package net.ranold.mixin;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.ChunkPos;
 import net.ranold.Config;
 import org.spongepowered.asm.mixin.Final;
@@ -33,7 +34,9 @@ public abstract class SubLevelHoldingChunkMapMixin {
                 double dx = player.getX() - centerX;
                 double dz = player.getZ() - centerZ;
                 if (dx * dx + dz * dz < rangeSq) {
-                    com.mojang.logging.LogUtils.getLogger().debug("SSRD: Preventing sub-level unload for chunk {} near player {} (Range: {})", pos, player.getName().getString(), range);
+                    com.mojang.logging.LogUtils.getLogger().debug(
+                            Component.translatable("ssrd.log.prevent_sublevel_unload", pos, player.getName().getString(), range).getString()
+                    );
                     ci.cancel();
                     return;
                 }

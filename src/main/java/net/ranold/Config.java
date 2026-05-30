@@ -1,5 +1,6 @@
 package net.ranold;
 
+import net.minecraft.network.chat.Component;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.config.ModConfigEvent;
@@ -11,6 +12,7 @@ public class Config {
 
     private static final ModConfigSpec.IntValue PHYSICS_RENDER_DISTANCE = BUILDER
             .comment("The render distance for physics objects (SubLevels) in chunks.")
+            .translation("ssrd.config.physics_render_distance")
             .defineInRange("physicsRenderDistance", 32, 2, 4096);
 
     public static final ModConfigSpec SPEC = BUILDER.build();
@@ -29,6 +31,8 @@ public class Config {
         PHYSICS_RENDER_DISTANCE.save();
         physicsRenderDistance = value;
         physicsTrackingRange = (double) value * 16.0;
-        com.mojang.logging.LogUtils.getLogger().info("SSRD: Physics Render Distance set to {} (Tracking Range: {})", value, physicsTrackingRange);
+        com.mojang.logging.LogUtils.getLogger().info(
+                Component.translatable("ssrd.log.physics_render_distance_set", value, physicsTrackingRange).getString()
+        );
     }
 }
