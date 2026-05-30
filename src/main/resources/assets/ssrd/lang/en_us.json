@@ -1,5 +1,17 @@
 {
-  "ssrd.options.physics_render_distance.name": "Sub-Level Distance",
+  "ssrd.options.physics_render_distance.name": "Physics Render Distance",
   "ssrd.options.physics_render_distance.tooltip": "Sets the maximum distance (in chunks) at which Sub-Levels will be rendered. The maximum value of this slider is determined by your Distant Horizons LOD render distance.",
-  "ssrd.options.server_max": "Server Max"
+  "ssrd.options.server_max": "Server Max",
+  "ssrd.log.occlusion_culler_mixin_loaded": "SSRD: OcclusionCullerMixin loaded",
+  "ssrd.log.render_section_manager_mixin_loaded": "SSRD: RenderSectionManagerMixin loaded",
+  "ssrd.log.override_search_distance": "SSRD: Overriding Search Distance to %s",
+  "ssrd.log.sodium_dispatcher_mixin_loaded": "SSRD: SodiumDispatcherMixin loaded",
+  "ssrd.log.prevent_sublevel_unload": "SSRD: Preventing sub-level unload for chunk %s near player %s (Range: %s)",
+  "ssrd.log.allow_distant_tracking_sublevel": "SSRD: Allowing distant tracking for sub-level at %s for player %s (Range: %s)",
+  "ssrd.config.physics_render_distance": "Sub-Level Distance",
+  "ssrd.log.physics_render_distance_set": "SSRD: Physics Render Distance set to %s (Tracking Range: %s)",
+  "ssrd.log.initialized": "SSRD: Initialized v0.5.2 (Standard Mode)",
+  "ssrd.screen.config.title": "SSRD Physics Settings (Outdated, use sodium video settings instead)",
+  "ssrd.ui.current_distance": "Current: %s chunks",
+  "ssrd.ui.button.chunk_count": "%s Chunks"
 }

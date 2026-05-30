@@ -1,0 +1,17 @@
+{
+    "ssrd.options.physics_render_distance.name": "子层级渲染距离",
+    "ssrd.options.physics_render_distance.tooltip": "设置子层级渲染的最大距离(以区块为单位)。此滑块的最大值取决于你的Distant Horizons LOD渲染距离。",
+    "ssrd.options.server_max": "服务器最大值",
+    "ssrd.log.occlusion_culler_mixin_loaded": "SSRD：遮挡剔除混入类已加载",
+    "ssrd.log.render_section_manager_mixin_loaded": "SSRD：渲染区块管理器混入类已加载",
+    "ssrd.log.override_search_distance": "SSRD：已将搜索距离覆盖为 %s",
+    "ssrd.log.sodium_dispatcher_mixin_loaded": "SSRD：钠渲染调度器混入类已加载",
+    "ssrd.log.prevent_sublevel_unload": "SSRD：阻止玩家 %s 附近区块 %s 的子场景卸载（范围：%s）",
+    "ssrd.log.allow_distant_tracking_sublevel": "SSRD：允许玩家 %s 对位于 %s 的子场景进行远距离追踪（范围：%s）",
+    "ssrd.config.physics_render_distance": "子场景距离",
+    "ssrd.log.physics_render_distance_set": "SSRD：物理渲染距离已设置为 %s（追踪范围：%s）",
+    "ssrd.log.initialized": "SSRD：已初始化 v0.5.2（标准模式）",
+    "ssrd.screen.config.title": "SSRD 物理设置（已废弃，请使用钠渲染器视频设置）",
+    "ssrd.ui.current_distance": "当前：%s 个区块",
+    "ssrd.ui.button.chunk_count": "%s 个区块"
+}

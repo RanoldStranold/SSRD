@@ -11,6 +11,7 @@ public class Config {
 
     private static final ModConfigSpec.IntValue PHYSICS_RENDER_DISTANCE = BUILDER
             .comment("The render distance for physics objects (SubLevels) in chunks.")
+            .translation("ssrd.config.physics_render_distance")
             .defineInRange("physicsRenderDistance", 32, 2, 4096);
 
     public static final ModConfigSpec SPEC = BUILDER.build();
