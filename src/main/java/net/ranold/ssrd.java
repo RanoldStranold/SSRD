@@ -37,7 +37,7 @@ public class ssrd {
     }
 
     private void registerPayloads(final RegisterPayloadHandlersEvent event) {
-        final PayloadRegistrar registrar = event.registrar("1");
+        final PayloadRegistrar registrar = event.registrar("1").optional();
         registrar.playToClient(
                 ServerConfigSyncPacket.TYPE,
                 ServerConfigSyncPacket.CODEC,
@@ -61,15 +61,17 @@ public class ssrd {
     @SubscribeEvent
     public void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer serverPlayer) {
-            int chunks = (int) Math.ceil(Config.physicsTrackingRange / 16.0);
-            serverPlayer.connection.send(new ServerConfigSyncPacket(chunks));
+            if (serverPlayer.connection.hasChannel(ServerConfigSyncPacket.TYPE)) {
+                int chunks = (int) Math.ceil(Config.physicsTrackingRange / 16.0);
+                net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(serverPlayer, new ServerConfigSyncPacket(chunks));
+            }
         }
     }
 
     @SubscribeEvent
     public void onEntityJoin(EntityJoinLevelEvent event) {
         if (event.getLevel().isClientSide && event.getEntity().getUUID().equals(net.minecraft.client.Minecraft.getInstance().player != null ? net.minecraft.client.Minecraft.getInstance().player.getUUID() : null)) {
-            net.minecraft.client.Minecraft.getInstance().getConnection().send(new ClientConfigSyncPacket(Config.physicsRenderDistance));
+            net.neoforged.neoforge.network.PacketDistributor.sendToServer(new ClientConfigSyncPacket(Config.physicsRenderDistance));
         }
     }
 }

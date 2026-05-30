@@ -5,3 +5,7 @@
 **SSRD**  is a mod that allows players to see Sable physics objects further than the vanilla render distance. If you're building planes, cars, or ships using Create: Aeronautics with Distant Horizons, this mod is basically a necessity (especially in multiplayer).
 ## Configuration
 The slider to change the **Sub-Level Distance** is in the Sodium menu under the normal **Simulation Distance** slider. The maximum distance allowed dynamicaly updates with your DH distance, or the server's set maximum.
+
+## License
+All Rights Reserved. See [LICENSE](LICENSE) for details.
+

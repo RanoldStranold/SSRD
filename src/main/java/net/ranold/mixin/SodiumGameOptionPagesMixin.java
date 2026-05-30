@@ -55,7 +55,7 @@ public class SodiumGameOptionPagesMixin {
                     .setBinding((storage, value) -> {
                         Config.setPhysicsRenderDistance(value);
                         if (net.minecraft.client.Minecraft.getInstance().getConnection() != null) {
-                            net.minecraft.client.Minecraft.getInstance().getConnection().send(new net.ranold.ClientConfigSyncPacket(value));
+                            net.neoforged.neoforge.network.PacketDistributor.sendToServer(new net.ranold.ClientConfigSyncPacket(value));
                         }
                     }, storage -> Math.min(net.ranold.Config.physicsRenderDistance, finalMax))
                     .setImpact(OptionImpact.MEDIUM)

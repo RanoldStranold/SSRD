@@ -5,7 +5,10 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "SubLevelTrackingSystemMixin",
-    "SubLevelHoldingChunkMapMixin"
+    "SubLevelHoldingChunkMapMixin",
+    "EntityTypeMixin",
+    "ChunkMapMixin",
+    "ServerLevelMixin"
   ],
   "client": [
     "RenderSectionManagerMixin",
@@ -24,7 +27,14 @@
     "GameRendererProjMixin",
     "DHShaderSourceMixin",
     "DHRenderUtilProjMixin",
-    "EntityRenderDispatcherMixin"
+    "EntityRenderDispatcherMixin",
+    "BlockEntityRendererMixin",
+    "AbstractContraptionEntityMixin",
+    "AbstractEntityVisualMixin",
+    "AbstractBlockEntityVisualMixin",
+    "ClientLevelMixin",
+    "BandedPrimeLimiterMixin",
+    "FrameUniformsMixin"
   ],
   "server": [
   ],
