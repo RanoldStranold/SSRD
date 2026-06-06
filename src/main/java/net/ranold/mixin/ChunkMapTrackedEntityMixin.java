@@ -15,7 +15,7 @@ import net.minecraft.server.level.ServerPlayer;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(targets = "net.minecraft.server.level.ChunkMap$TrackedEntity")
-public class ChunkMapTrackedEntityMixin {
+public abstract class ChunkMapTrackedEntityMixin {
 
     @Shadow @Final Entity entity;
     @Shadow int range;
@@ -25,7 +25,8 @@ public class ChunkMapTrackedEntityMixin {
         String name = EntityType.getKey(this.entity.getType()).toString();
         boolean isContraption = name.startsWith("create:") || name.startsWith("aeronautics:") || name.startsWith("offroad:");
         if (isContraption && (name.contains("contraption") || name.contains("carriage") || name.contains("propeller"))) {
-            int requestedRange = (int) Config.physicsTrackingRange;
+            // Force a massive tracking range for contraptions so they are always eligible for tracking
+            int requestedRange = 10000;
             if (requestedRange > this.range) {
                 this.range = requestedRange;
                 com.mojang.logging.LogUtils.getLogger().info("SSRD: ChunkMapTrackedEntityMixin applied! Range for {} increased to {}", name, requestedRange);
@@ -34,34 +35,11 @@ public class ChunkMapTrackedEntityMixin {
     }
 
     @Redirect(method = "updatePlayer", at = @At(value = "INVOKE", target = "Ljava/lang/Math;min(II)I"))
-    private int ssd$bypassViewDistanceClamp(int range, int viewDistanceBlocks, ServerPlayer player) {
+    private int ssd$bypassViewDistanceClamp(int range, int viewDistanceBlocks) {
         String name = EntityType.getKey(this.entity.getType()).toString();
         boolean isContraption = name.startsWith("create:") || name.startsWith("aeronautics:") || name.startsWith("offroad:");
         if (isContraption && (name.contains("contraption") || name.contains("carriage") || name.contains("propeller"))) {
-            boolean hasMod = false;
-            try {
-                Object listener = player.getClass().getField("connection").get(player);
-                java.lang.reflect.Field connField = listener.getClass().getSuperclass().getDeclaredField("connection");
-                connField.setAccessible(true);
-                Object connection = connField.get(listener);
-                
-                java.lang.reflect.Field channelField = connection.getClass().getDeclaredField("channel");
-                channelField.setAccessible(true);
-                io.netty.channel.Channel channel = (io.netty.channel.Channel) channelField.get(connection);
-                
-                var networkRegistryClass = Class.forName("net.neoforged.neoforge.network.registration.NetworkRegistry");
-                var channelsAttrField = networkRegistryClass.getField("CHANNELS_ATTRIBUTE");
-                var channelsAttrKey = (io.netty.util.AttributeKey<java.util.Map<net.minecraft.resources.ResourceLocation, ?>>) channelsAttrField.get(null);
-                
-                var attr = channel.attr(channelsAttrKey).get();
-                if (attr != null && attr.containsKey(net.ranold.ServerConfigSyncPacket.TYPE.id())) {
-                    hasMod = true;
-                }
-            } catch (Exception ignored) {}
-
-            if (hasMod) {
-                return range; // Ignore the viewDistance clamp
-            }
+            return range; // Ignore the viewDistance clamp for contraptions
         }
         return Math.min(range, viewDistanceBlocks);
     }

@@ -31,38 +31,49 @@ public class SodiumGameOptionPagesMixin {
             List<Option<?>> options = new ArrayList<>(((OptionGroupAccessor) firstGroup).getOptions());
 
             // Safe DH / Voxy sync
-            int maxDistance = 4096;
+            int minDistance = Config.minPhysicsRenderDistance;
+            int maxDistance = Config.maxPhysicsRenderDistance;
+            boolean isVoxyOnly = false;
+
             try {
                 if (net.neoforged.fml.loading.LoadingModList.get().getModFileById("distanthorizons") != null) {
-                    var dhConfig = com.seibel.distanthorizons.api.DhApi.Delayed.configs;
-                    if (dhConfig != null) {
-                        maxDistance = dhConfig.graphics().chunkRenderDistance().getValue();
+                    // Reflection for DH to avoid crash
+                    Class<?> delayedClass = Class.forName("com.seibel.distanthorizons.api.DhApi$Delayed");
+                    Object configs = delayedClass.getField("configs").get(null);
+                    if (configs != null) {
+                        Object graphics = configs.getClass().getMethod("graphics").invoke(configs);
+                        Object chunkDist = graphics.getClass().getMethod("chunkRenderDistance").invoke(graphics);
+                        maxDistance = (int) chunkDist.getClass().getMethod("getValue").invoke(chunkDist);
                     }
                 } else if (net.neoforged.fml.loading.LoadingModList.get().getModFileById("voxy") != null) {
-                    // Pull from VoxyConfig.CONFIG.sectionRenderDistance reflectively to avoid compile-time dependency
-                    Class<?> configClass = Class.forName("me.cortex.voxy.client.config.VoxyConfig");
-                    Object configInstance = configClass.getField("CONFIG").get(null);
-                    maxDistance = configClass.getField("sectionRenderDistance").getInt(configInstance);
+                    isVoxyOnly = true;
                 }
             } catch (Throwable ignored) {}
 
-            final int finalMax = Math.max(32, maxDistance);
+            final int finalMin = minDistance;
+            final int finalMax = Math.max(finalMin + 1, maxDistance);
+            final boolean finalVoxyOnly = isVoxyOnly;
             
-            // Validate current config value to prevent constructor crash
+            // Validate current config value
             int current = net.ranold.Config.physicsRenderDistance;
-            if (current < 16) current = 16;
+            if (current < finalMin) current = finalMin;
             if (current > finalMax) current = finalMax;
+
+            final int sliderMax = isVoxyOnly ? current : finalMax;
+            final int sliderMin = isVoxyOnly ? current : finalMin;
             
             OptionImpl<Void, Integer> physicsDistanceOption = OptionImpl.createBuilder(int.class, SSRD_STORAGE)
-                    .setName(Component.translatable("ssrd.options.physics_render_distance.name"))
-                    .setTooltip(Component.translatable("ssrd.options.physics_render_distance.tooltip"))
-                    .setControl(option -> new SliderControl(option, 16, finalMax, 1, ControlValueFormatter.translateVariable("options.chunks")))
+                    .setName(Component.literal((isVoxyOnly ? "§7§o" : "") + Component.translatable("ssrd.options.physics_render_distance.name").getString() + (isVoxyOnly ? "§r" : "")))
+                    .setTooltip(Component.translatable(isVoxyOnly ? "ssrd.options.physics_render_distance.voxy_tooltip" : "ssrd.options.physics_render_distance.tooltip"))
+                    .setControl(option -> new SliderControl(option, sliderMin, Math.max(sliderMin + 1, sliderMax), 1, ControlValueFormatter.translateVariable("options.chunks")))
                     .setBinding((storage, value) -> {
+                        if (finalVoxyOnly) return;
                         Config.setPhysicsRenderDistance(value);
                         if (net.minecraft.client.Minecraft.getInstance().getConnection() != null) {
                             net.neoforged.neoforge.network.PacketDistributor.sendToServer(new net.ranold.ClientConfigSyncPacket(value));
                         }
                     }, storage -> Math.min(net.ranold.Config.physicsRenderDistance, finalMax))
+                    .setEnabled(() -> !finalVoxyOnly)
                     .setImpact(OptionImpact.MEDIUM)
                     .build();
 

@@ -37,8 +37,13 @@ public class EntityRenderDispatcherMixin {
     }
 
     private boolean ssd$isSubLevelEntity(Entity entity) {
-        String className = entity.getClass().getName();
-        if (className.contains("Contraption") || className.contains("Carriage")) {
+        String typeKey = net.minecraft.world.entity.EntityType.getKey(entity.getType()).toString();
+        boolean isPhysicsMod = typeKey.startsWith("create:") || typeKey.startsWith("aeronautics:") || typeKey.startsWith("offroad:") || typeKey.startsWith("vs_eureka:") || typeKey.startsWith("valkyrienskies:");
+        
+        String className = entity.getClass().getName().toLowerCase();
+        boolean matchesKeywords = isPhysicsMod || className.contains("contraption") || className.contains("carriage") || className.contains("propeller") || className.contains("seat") || className.contains("hull") || className.contains("ship");
+        
+        if (matchesKeywords) {
             try {
                 // Safely get HELPER via reflection to handle optional Sable
                 Class<?> sableClass = Class.forName("dev.ryanhcode.sable.Sable");
@@ -46,13 +51,13 @@ public class EntityRenderDispatcherMixin {
 
                 // Try getContaining first
                 Object containing = helper.getClass().getMethod("getContaining", Entity.class).invoke(helper, entity); 
-                if (containing != null && containing.getClass().getName().contains("SubLevel")) {
+                if (containing != null) {
                     return true;
                 }
 
                 // Then try getTrackingSubLevel
                 Object tracking = helper.getClass().getMethod("getTrackingSubLevel", Entity.class).invoke(helper, entity);
-                if (tracking != null && tracking.getClass().getName().contains("SubLevel")) {
+                if (tracking != null) {
                     return true;
                 }
             } catch (ClassNotFoundException e) {
@@ -61,6 +66,6 @@ public class EntityRenderDispatcherMixin {
                 //com.mojang.logging.LogUtils.getLogger().error("SSRD: Error in EntityRenderDispatcherMixin", e);
             }
         }
-        return false;
+        return matchesKeywords;
     }
 }

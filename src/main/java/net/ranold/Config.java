@@ -12,16 +12,30 @@ public class Config {
     private static final ModConfigSpec.IntValue PHYSICS_RENDER_DISTANCE = BUILDER
             .comment("The render distance for physics objects (SubLevels) in chunks.")
             .translation("ssrd.config.physics_render_distance")
-            .defineInRange("physicsRenderDistance", 32, 2, 4096);
+            .defineInRange("physicsRenderDistance", 32, 1, 1000000);
+
+    private static final ModConfigSpec.IntValue MIN_PHYSICS_RENDER_DISTANCE = BUILDER
+            .comment("The minimum render distance for physics objects (SubLevels) in chunks.")
+            .translation("ssrd.config.min_physics_render_distance")
+            .defineInRange("minPhysicsRenderDistance", 16, 1, 1000000);
+
+    private static final ModConfigSpec.IntValue MAX_PHYSICS_RENDER_DISTANCE = BUILDER
+            .comment("The maximum render distance for physics objects (SubLevels) in chunks.")
+            .translation("ssrd.config.max_physics_render_distance")
+            .defineInRange("maxPhysicsRenderDistance", 4096, 1, 1000000);
 
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     public static int physicsRenderDistance = 32;
+    public static int minPhysicsRenderDistance = 16;
+    public static int maxPhysicsRenderDistance = 4096;
     public static double physicsTrackingRange = 512.0;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
         physicsRenderDistance = PHYSICS_RENDER_DISTANCE.get();
+        minPhysicsRenderDistance = MIN_PHYSICS_RENDER_DISTANCE.get();
+        maxPhysicsRenderDistance = MAX_PHYSICS_RENDER_DISTANCE.get();
         physicsTrackingRange = (double) physicsRenderDistance * 16.0;
     }
 
@@ -31,5 +45,17 @@ public class Config {
         physicsRenderDistance = value;
         physicsTrackingRange = (double) value * 16.0;
         com.mojang.logging.LogUtils.getLogger().info("SSRD: Physics Render Distance set to {} (Tracking Range: {})", value, physicsTrackingRange);
+    }
+
+    public static void setMinPhysicsRenderDistance(int value) {
+        MIN_PHYSICS_RENDER_DISTANCE.set(value);
+        MIN_PHYSICS_RENDER_DISTANCE.save();
+        minPhysicsRenderDistance = value;
+    }
+
+    public static void setMaxPhysicsRenderDistance(int value) {
+        MAX_PHYSICS_RENDER_DISTANCE.set(value);
+        MAX_PHYSICS_RENDER_DISTANCE.save();
+        maxPhysicsRenderDistance = value;
     }
 }

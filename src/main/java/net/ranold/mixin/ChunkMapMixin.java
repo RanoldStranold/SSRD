@@ -49,25 +49,11 @@ public abstract class ChunkMapMixin {
                 if (trackingPlayers.contains(player.getUUID())) {
                     // SSRD: Only force chunk tracking if player has the mod
                     boolean hasMod = false;
-                    try {
-                        Object listener = player.getClass().getField("connection").get(player);
-                        java.lang.reflect.Field connField = listener.getClass().getSuperclass().getDeclaredField("connection");
-                        connField.setAccessible(true);
-                        Object connection = connField.get(listener);
-                        
-                        java.lang.reflect.Field channelField = connection.getClass().getDeclaredField("channel");
-                        channelField.setAccessible(true);
-                        io.netty.channel.Channel channel = (io.netty.channel.Channel) channelField.get(connection);
-                        
-                        var networkRegistryClass = Class.forName("net.neoforged.neoforge.network.registration.NetworkRegistry");
-                        var channelsAttrField = networkRegistryClass.getField("CHANNELS_ATTRIBUTE");
-                        var channelsAttrKey = (io.netty.util.AttributeKey<java.util.Map<net.minecraft.resources.ResourceLocation, ?>>) channelsAttrField.get(null);
-                        
-                        var attr = channel.attr(channelsAttrKey).get();
-                        if (attr != null && attr.containsKey(net.ranold.ServerConfigSyncPacket.TYPE.id())) {
-                            hasMod = true;
-                        }
-                    } catch (Exception ignored) {}
+                    if (net.ranold.ssrd.playerRequestedRanges.containsKey(player)) {
+                        hasMod = true;
+                    } else if (player.getServer() != null && player.getServer().isSingleplayer()) {
+                        hasMod = true;
+                    }
 
                     if (!hasMod) {
                         continue;
@@ -91,6 +77,24 @@ public abstract class ChunkMapMixin {
                             }
                         }
                     }
+
+                    // SPATIAL FALLBACK: If the chunk is within the physics render distance of the sub-level's origin, track it.
+                    // This ensures any entities near the sub-level are tracked even if not in the contraptions list.
+                    try {
+                        Object logicalPose = slObj.getClass().getMethod("logicalPose").invoke(slObj);
+                        Object posObj = logicalPose.getClass().getMethod("position").invoke(logicalPose);
+                        double slX = (double) posObj.getClass().getMethod("x").invoke(posObj);
+                        double slZ = (double) posObj.getClass().getMethod("z").invoke(posObj);
+                        
+                        int slChunkX = (int) Math.floor(slX) >> 4;
+                        int slChunkZ = (int) Math.floor(slZ) >> 4;
+                        
+                        int radius = net.ranold.ssrd.getPlayerRequestedRange(player);
+                        if (Math.abs(slChunkX - x) <= radius && Math.abs(slChunkZ - z) <= radius) {
+                             cir.setReturnValue(true);
+                             return;
+                        }
+                    } catch (Exception ignored) {}
                 }
             }
         } catch (Exception e) {

@@ -24,6 +24,18 @@ public class ClientModEvents {
 
         // Register forge bus events manually to hide client class references from the server scanner
         NeoForge.EVENT_BUS.addListener(ClientModEvents::onEntityJoin);
+        NeoForge.EVENT_BUS.addListener(ClientModEvents::onRegisterClientCommands);
+    }
+
+    public static void onRegisterClientCommands(net.neoforged.neoforge.client.event.RegisterClientCommandsEvent event) {
+        event.getDispatcher().register(net.minecraft.commands.Commands.literal("ssrd")
+                .then(net.minecraft.commands.Commands.literal("config")
+                        .executes(context -> {
+                            Minecraft.getInstance().setScreen(new ConfigScreen(null));
+                            return 1;
+                        })
+                )
+        );
     }
 
     public static void onEntityJoin(EntityJoinLevelEvent event) {

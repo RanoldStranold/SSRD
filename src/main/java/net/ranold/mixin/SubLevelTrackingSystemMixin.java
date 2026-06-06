@@ -17,16 +17,29 @@ import java.util.UUID;
 @Mixin(targets = "dev.ryanhcode.sable.sublevel.system.SubLevelTrackingSystem", remap = false)
 public class SubLevelTrackingSystemMixin {
 
-    @Redirect(method = "shouldLoad", at = @At(value = "INVOKE", target = "Lnet/neoforged/neoforge/common/ModConfigSpec$DoubleValue;getAsDouble()D"))
-    private double ssd$overrideTrackingRange(net.neoforged.neoforge.common.ModConfigSpec.DoubleValue instance) {
-        return 100000.0; // Return huge value to pass internal range checks
-    }
-
     @Inject(method = "shouldLoad", at = @At("HEAD"), cancellable = true)
     private void ssd$checkPlayerRequestedRange(Player player, Vector3dc entityPosition, CallbackInfoReturnable<Boolean> cir) {
         double distSq = entityPosition.distanceSquared(player.getX(), player.getY(), player.getZ());
         
-        // If forceloaded on server, always sync
+        double range;
+        if (player instanceof ServerPlayer sp) {
+            Integer requestedChunks = net.ranold.ssrd.playerRequestedRanges.get(sp);
+            if (requestedChunks != null) {
+                // Mod detected via packet
+                range = requestedChunks * 16.0;
+            } else if (sp.getServer() != null && sp.getServer().isSingleplayer()) {
+                // Singleplayer always has the mod
+                range = net.ranold.Config.physicsTrackingRange;
+            } else {
+                // Fallback for multiplayer: use VRD until packet received
+                range = sp.requestedViewDistance() * 16.0;
+            }
+        } else {
+            range = net.ranold.Config.physicsTrackingRange;
+        }
+
+        // If forceloaded on server, give a 2x range bonus (up to 10k blocks)
+        boolean isForceloaded = false;
         if (player instanceof ServerPlayer sp) {
             try {
                 SSRDForceloadData data = net.ranold.SSRDForceloadData.get(sp.serverLevel());
@@ -38,27 +51,25 @@ public class SubLevelTrackingSystemMixin {
                         for (UUID uuid : data.getEntries().keySet()) {
                             Object sl = container.getSubLevel(uuid);
                             if (sl != null) {
+                                Object pose = sl.getClass().getMethod("logicalPose").invoke(sl);
+                                double slX, slY, slZ;
                                 try {
-                                    Object pose = sl.getClass().getMethod("logicalPose").invoke(sl);
-                                    double slX, slY, slZ;
-                                    try {
-                                        Object posObj = pose.getClass().getMethod("position").invoke(pose);
-                                        slX = (double) posObj.getClass().getMethod("x").invoke(posObj);
-                                        slY = (double) posObj.getClass().getMethod("y").invoke(posObj);
-                                        slZ = (double) posObj.getClass().getMethod("z").invoke(posObj);
-                                    } catch (Exception e) {
-                                        slX = (double) pose.getClass().getMethod("x").invoke(pose);
-                                        slY = (double) pose.getClass().getMethod("y").invoke(pose);
-                                        slZ = (double) pose.getClass().getMethod("z").invoke(pose);
-                                    }
+                                    Object posObj = pose.getClass().getMethod("position").invoke(pose);
+                                    slX = (double) posObj.getClass().getMethod("x").invoke(posObj);
+                                    slY = (double) posObj.getClass().getMethod("y").invoke(posObj);
+                                    slZ = (double) posObj.getClass().getMethod("z").invoke(posObj);
+                                } catch (Exception e) {
+                                    slX = (double) pose.getClass().getMethod("x").invoke(pose);
+                                    slY = (double) pose.getClass().getMethod("y").invoke(pose);
+                                    slZ = (double) pose.getClass().getMethod("z").invoke(pose);
+                                }
 
-                                    if (Math.abs(slX - entityPosition.x()) < 0.1 && 
-                                        Math.abs(slY - entityPosition.y()) < 0.1 && 
-                                        Math.abs(slZ - entityPosition.z()) < 0.1) {
-                                        cir.setReturnValue(true);
-                                        return;
-                                    }
-                                } catch (Exception ignored) {}
+                                if (Math.abs(slX - entityPosition.x()) < 0.1 && 
+                                    Math.abs(slY - entityPosition.y()) < 0.1 && 
+                                    Math.abs(slZ - entityPosition.z()) < 0.1) {
+                                    isForceloaded = true;
+                                    break;
+                                }
                             }
                         }
                     }
@@ -66,35 +77,9 @@ public class SubLevelTrackingSystemMixin {
             } catch (Exception ignored) {}
         }
 
-        double range = net.ranold.Config.physicsTrackingRange; // Server's default
-        if (player instanceof ServerPlayer sp) {
-            boolean hasMod = false;
-            try {
-                Object listener = sp.getClass().getField("connection").get(sp);
-                java.lang.reflect.Field connField = listener.getClass().getSuperclass().getDeclaredField("connection");
-                connField.setAccessible(true);
-                Object connection = connField.get(listener);
-                
-                java.lang.reflect.Field channelField = connection.getClass().getDeclaredField("channel");
-                channelField.setAccessible(true);
-                io.netty.channel.Channel channel = (io.netty.channel.Channel) channelField.get(connection);
-                
-                var networkRegistryClass = Class.forName("net.neoforged.neoforge.network.registration.NetworkRegistry");
-                var channelsAttrField = networkRegistryClass.getField("CHANNELS_ATTRIBUTE");
-                var channelsAttrKey = (io.netty.util.AttributeKey<java.util.Map<net.minecraft.resources.ResourceLocation, ?>>) channelsAttrField.get(null);
-                
-                var attr = channel.attr(channelsAttrKey).get();
-                if (attr != null && attr.containsKey(net.ranold.ServerConfigSyncPacket.TYPE.id())) {
-                    hasMod = true;
-                }
-            } catch (Exception ignored) {}
-
-            if (!hasMod) {
-                // Default vanilla range logic
-                range = sp.requestedViewDistance() * 16.0;
-            } else {
-                range = net.ranold.ssrd.getPlayerRequestedRange(sp) * 16.0;
-            }
+        if (isForceloaded) {
+            range = Math.max(range, 256.0); // Minimum 16 chunks for forceloaded
+            range = Math.min(10000.0, range * 2.0);
         }
 
         boolean result = distSq < range * range;

@@ -1,6 +1,7 @@
 {
   "ssrd.options.physics_render_distance.name": "Physics Render Distance",
   "ssrd.options.physics_render_distance.tooltip": "Sets the maximum distance (in chunks) at which Sub-Levels will be rendered. The maximum value of this slider is determined by your Distant Horizons LOD render distance.",
+  "ssrd.options.physics_render_distance.voxy_tooltip": "Refer to SSRD config to change distance. §8§oError: No DH Detected§r",
   "ssrd.options.server_max": "Server Max",
   "ssrd.log.occlusion_culler_mixin_loaded": "SSRD: OcclusionCullerMixin loaded",
   "ssrd.log.render_section_manager_mixin_loaded": "SSRD: RenderSectionManagerMixin loaded",
@@ -11,7 +12,7 @@
   "ssrd.config.physics_render_distance": "Sub-Level Distance",
   "ssrd.log.physics_render_distance_set": "SSRD: Physics Render Distance set to %s (Tracking Range: %s)",
   "ssrd.log.initialized": "SSRD: Initialized v0.5.2 (Standard Mode)",
-  "ssrd.screen.config.title": "SSRD Physics Settings (Outdated, use sodium video settings instead)",
+  "ssrd.screen.config.title": "SSRD Render Settings (Outdated unless using Voxy)",
   "ssrd.ui.current_distance": "Current: %s chunks",
   "ssrd.ui.button.chunk_count": "%s Chunks"
 }

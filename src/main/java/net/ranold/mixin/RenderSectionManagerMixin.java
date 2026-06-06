@@ -59,9 +59,7 @@ public abstract class RenderSectionManagerMixin {
     @Inject(method = "getSearchDistance", at = @At("HEAD"), cancellable = true, remap = false)
     private void ssd$overrideSearchDistance(CallbackInfoReturnable<Float> cir) {
         if (SSRDState.IS_SUBLEVEL_RENDER.get()) {
-            float dist = (float) net.ranold.Config.physicsRenderDistance * 16.0f;
-            com.mojang.logging.LogUtils.getLogger().debug("SSRD: Overriding Search Distance to {}", dist);
-            cir.setReturnValue(dist);
+            cir.setReturnValue((float) net.ranold.Config.physicsRenderDistance * 16.0f);
         }
     }
 

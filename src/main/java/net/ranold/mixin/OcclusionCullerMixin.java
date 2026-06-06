@@ -24,9 +24,23 @@ public abstract class OcclusionCullerMixin {
     @Inject(method = "findVisible", at = @At("HEAD"), cancellable = true)
     public void ssd$forceAllVisible(OcclusionCuller.Visitor visitor, Viewport viewport, float searchDistance, boolean useOcclusionCulling, int frame, CallbackInfo ci) {
         if (SSRDState.IS_SUBLEVEL_RENDER.get()) {
+            // Use Config.physicsRenderDistance directly to be safe, or the provided searchDistance if synced
+            float physicsDist = (float) net.ranold.Config.physicsRenderDistance * 16.0f;
+            float physicsDistSq = physicsDist * physicsDist;
+            
+            double camX = viewport.getTransform().x;
+            double camY = viewport.getTransform().y;
+            double camZ = viewport.getTransform().z;
+
             for (RenderSection section : this.sections.values()) {
-                section.setLastVisibleFrame(frame);
-                visitor.visit(section);
+                double dx = section.getCenterX() - camX;
+                double dy = section.getCenterY() - camY;
+                double dz = section.getCenterZ() - camZ;
+                
+                if (dx * dx + dy * dy + dz * dz <= physicsDistSq) {
+                    section.setLastVisibleFrame(frame);
+                    visitor.visit(section);
+                }
             }
             ci.cancel();
         }

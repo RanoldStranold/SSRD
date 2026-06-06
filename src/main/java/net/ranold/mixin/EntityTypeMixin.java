@@ -17,11 +17,11 @@ public class EntityTypeMixin {
         String name = EntityType.getKey(type).toString();
         
         // Check if it's a Create or Simulated contraption
-        boolean isContraption = name.startsWith("create:") || name.startsWith("aeronautics:") || name.startsWith("offroad:");
-        if (isContraption && (name.contains("contraption") || name.contains("carriage") || name.contains("propeller"))) {
-            int chunks = (int) Math.ceil(Config.physicsTrackingRange / 16.0);
+        boolean isContraption = name.startsWith("create:") || name.startsWith("aeronautics:") || name.startsWith("offroad:") || name.startsWith("vs_eureka:") || name.startsWith("valkyrienskies:");
+        if (isContraption && (name.contains("contraption") || name.contains("carriage") || name.contains("propeller") || name.contains("ship"))) {
+            // Force a massive tracking range for contraptions on client too
+            int newRange = 1000;
             int defaultRange = cir.getReturnValue() != null ? cir.getReturnValue() : 5;
-            int newRange = Math.max(defaultRange, chunks);
             
             if (newRange > defaultRange) {
                 com.mojang.logging.LogUtils.getLogger().debug("SSRD: Overriding tracking range for {} to {} chunks", name, newRange);
