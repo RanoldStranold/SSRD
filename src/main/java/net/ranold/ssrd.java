@@ -70,16 +70,18 @@ public class ssrd {
     @SubscribeEvent
     public void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer serverPlayer) {
-            // Check if client has the mod by looking at registered channels/payloads
-            // In NeoForge 21.1, we can check the connection's capabilities
-            boolean hasMod = serverPlayer.connection.hasChannel(ServerConfigSyncPacket.TYPE);
-
-            if (hasMod) {
+            if (hasMod(serverPlayer)) {
                 int chunks = (int) Math.ceil(Config.physicsTrackingRange / 16.0);
                 net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(serverPlayer, new ServerConfigSyncPacket(chunks));
             } else {
                 LOGGER.info("SSRD: Client {} does not have SSRD, skipping sync.", serverPlayer.getScoreboardName());
             }
         }
+    }
+
+    public static boolean hasMod(ServerPlayer p) {
+        // Check if client has the mod by looking at registered channels/payloads
+        // In NeoForge 21.1, we can check the connection's capabilities
+        return p.connection.hasChannel(ServerConfigSyncPacket.TYPE);
     }
 }
