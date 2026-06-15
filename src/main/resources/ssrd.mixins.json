@@ -1,8 +1,8 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "net.ranold.mixin",
-  "plugin": "net.ranold.SSRDMixinPlugin",
+  "package": "net.ranold.ssrd.mixin",
+  "plugin": "net.ranold.ssrd.SSRDMixinPlugin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "SubLevelTrackingSystemMixin",
