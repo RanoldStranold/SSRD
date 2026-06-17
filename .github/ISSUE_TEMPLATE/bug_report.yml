@@ -15,7 +15,7 @@ body:
     id: other-mod-version
     attributes:
       label: "Other mods being used"
-      description: "What other mods are you using, and their versions?"
+      description: "What other mods are you using, and what versions?"
       placeholder: "e.g., Sodium 0.8.#, Distant Horizons 3.1.#
     validations:
       required: true
