@@ -49,8 +49,8 @@ neoForge {
 
 dependencies {
     implementation files("red_repos/sodium/neoforge/build/libs/sodium-neoforge-0.8.12-SNAPSHOT+mc1.21.1-local-mod.jar")
-    implementation files("run/mods/sable-neoforge-1.21.1-2.0.1.jar")
-    implementation "maven.modrinth:distanthorizons:3.0.3-b-1.21.1"
+    implementation files("run/mods/sable-neoforge-1.21.1-2.0.2.jar")
+    compileOnly "maven.modrinth:distanthorizons:3.1.0-b-1.21.1"
 
     compileOnly "dev.engine-room.flywheel:flywheel-neoforge-api-1.21.1:1.0.6"
 }

@@ -39,7 +39,6 @@ public class SodiumConfigBuilderMixin {
 
         int minDistance = Config.minPhysicsRenderDistance;
         int maxDistance = Config.maxPhysicsRenderDistance;
-        boolean isVoxyOnly = false;
 
         try {
             if (net.neoforged.fml.loading.LoadingModList.get().getModFileById("distanthorizons") != null) {
@@ -50,38 +49,30 @@ public class SodiumConfigBuilderMixin {
                     Object chunkDist = graphics.getClass().getMethod("chunkRenderDistance").invoke(graphics);
                     maxDistance = (int) chunkDist.getClass().getMethod("getValue").invoke(chunkDist);
                 }
-            } else if (net.neoforged.fml.loading.LoadingModList.get().getModFileById("voxy") != null) {
-                isVoxyOnly = true;
             }
         } catch (Throwable ignored) {}
 
         final int finalMin = minDistance;
         final int finalMax = Math.max(finalMin + 1, maxDistance);
-        final boolean finalVoxyOnly = isVoxyOnly;
 
         int current = Config.physicsRenderDistance;
         if (current < finalMin) current = finalMin;
         if (current > finalMax) current = finalMax;
 
-        final int sliderMax = isVoxyOnly ? current : finalMax;
-        final int sliderMin = isVoxyOnly ? current : finalMin;
-
         group.addOption(
             builder.createIntegerOption(ResourceLocation.parse("ssrd:general.physics_render_distance"))
                 .setStorageHandler(SSRD_STORAGE)
-                .setName(Component.literal((isVoxyOnly ? "§7§o" : "") + Component.translatable("ssrd.options.physics_render_distance.name").getString() + (isVoxyOnly ? "§r" : "")))
-                .setTooltip(Component.translatable(isVoxyOnly ? "ssrd.options.physics_render_distance.voxy_tooltip" : "ssrd.options.physics_render_distance.tooltip"))
+                .setName(Component.translatable("ssrd.options.physics_render_distance.name"))
+                .setTooltip(Component.translatable("ssrd.options.physics_render_distance.tooltip"))
                 .setValueFormatter(ControlValueFormatterImpls.translateVariable("options.chunks"))
-                .setRange(sliderMin, Math.max(sliderMin + 1, sliderMax), 1)
-                .setDefaultValue(sliderMax)
+                .setRange(finalMin, Math.max(finalMin + 1, finalMax), 1)
+                .setDefaultValue(finalMax)
                 .setBinding((value) -> {
-                    if (finalVoxyOnly) return;
                     Config.setPhysicsRenderDistance(value);
                     if (net.minecraft.client.Minecraft.getInstance().getConnection() != null) {
                         net.neoforged.neoforge.network.PacketDistributor.sendToServer(new ClientConfigSyncPacket(value));
                     }
                 }, () -> Math.min(Config.physicsRenderDistance, finalMax))
-                .setEnabledProvider(state -> !finalVoxyOnly)
                 .setImpact(OptionImpact.MEDIUM)
         );
 
