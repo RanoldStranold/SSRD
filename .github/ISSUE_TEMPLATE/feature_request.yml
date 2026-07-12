@@ -9,6 +9,6 @@ body:
     attributes:
       label: "Description of the request"
       description: "Please provide a clear and concise description of whatever it is you're requesting"
-      placeholder: "cmon lets here it"
+      placeholder: "cmon lets hear it"
     validations:
       required: false
