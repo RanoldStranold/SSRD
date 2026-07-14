@@ -1,5 +1,6 @@
 package net.ranold.ssrd.mixin;
 
+import net.ranold.ssrd.ssrd;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -25,11 +26,11 @@ public abstract class ChunkMapTrackedEntityMixin {
         String name = EntityType.getKey(this.entity.getType()).toString();
         boolean isContraption = name.startsWith("create:") || name.startsWith("aeronautics:") || name.startsWith("offroad:");
         if (isContraption && (name.contains("contraption") || name.contains("carriage") || name.contains("propeller"))) {
-            // Force a massive tracking range for contraptions so they are always eligible for tracking
-            int requestedRange = 10000;
+            // Use SSRD's configured tracking range instead of a massive hardcoded value
+            int requestedRange = (int) Config.physicsTrackingRange;
             if (requestedRange > this.range) {
                 this.range = requestedRange;
-                com.mojang.logging.LogUtils.getLogger().info("SSRD: ChunkMapTrackedEntityMixin applied! Range for {} increased to {}", name, requestedRange);
+                com.mojang.logging.LogUtils.getLogger().debug("SSRD: Contraption tracking range for {} set to {}", name, requestedRange);
             }
         }
     }
@@ -39,7 +40,9 @@ public abstract class ChunkMapTrackedEntityMixin {
         String name = EntityType.getKey(this.entity.getType()).toString();
         boolean isContraption = name.startsWith("create:") || name.startsWith("aeronautics:") || name.startsWith("offroad:");
         if (isContraption && (name.contains("contraption") || name.contains("carriage") || name.contains("propeller"))) {
-            return range; // Ignore the viewDistance clamp for contraptions
+            // Clamp to SSRD tracking range instead of vanilla viewDistance, but don't remove clamp entirely
+            int ssrdRange = (int) Config.physicsTrackingRange;
+            return Math.min(range, ssrdRange);
         }
         return Math.min(range, viewDistanceBlocks);
     }
