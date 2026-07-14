@@ -12,7 +12,7 @@ public class Config {
     private static final ModConfigSpec.IntValue PHYSICS_RENDER_DISTANCE = BUILDER
             .comment("The render distance for physics objects (SubLevels) in chunks.")
             .translation("ssrd.config.physics_render_distance")
-            .defineInRange("physicsRenderDistance", 32, 1, 1000000);
+            .defineInRange("physicsRenderDistance", 128, 1, 1000000);
 
     private static final ModConfigSpec.IntValue MIN_PHYSICS_RENDER_DISTANCE = BUILDER
             .comment("The minimum render distance for physics objects (SubLevels) in chunks.")
@@ -26,10 +26,10 @@ public class Config {
 
     public static final ModConfigSpec SPEC = BUILDER.build();
 
-    public static int physicsRenderDistance = 32;
+    public static int physicsRenderDistance = 128;
     public static int minPhysicsRenderDistance = 16;
     public static int maxPhysicsRenderDistance = 4096;
-    public static double physicsTrackingRange = 512.0;
+    public static double physicsTrackingRange = 2048.0;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
