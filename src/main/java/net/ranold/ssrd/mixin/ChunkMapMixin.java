@@ -80,19 +80,12 @@ public abstract class ChunkMapMixin {
                         }
                     }
 
-                    // SPATIAL FALLBACK: If the chunk is within the physics render distance of the sub-level's origin, track it.
-                    // This ensures any entities near the sub-level are tracked even if not in the contraptions list.
+                    // SPATIAL FALLBACK: If the chunk is within the sub-level's plot, track it.
+                    // This ensures any entities in the plot are tracked even if not in the contraptions list.
                     try {
-                        Object logicalPose = slObj.getClass().getMethod("logicalPose").invoke(slObj);
-                        Object posObj = logicalPose.getClass().getMethod("position").invoke(logicalPose);
-                        double slX = (double) posObj.getClass().getMethod("x").invoke(posObj);
-                        double slZ = (double) posObj.getClass().getMethod("z").invoke(posObj);
-                        
-                        int slChunkX = (int) Math.floor(slX) >> 4;
-                        int slChunkZ = (int) Math.floor(slZ) >> 4;
-                        
-                        int radius = ssrd.getPlayerRequestedRange(player);
-                        if (Math.abs(slChunkX - x) <= radius && Math.abs(slChunkZ - z) <= radius) {
+                        Object chunkPosObj = Class.forName("net.minecraft.world.level.ChunkPos").getConstructor(int.class, int.class).newInstance(x, z);
+                        boolean contained = (boolean) plot.getClass().getMethod("contains", chunkPosObj.getClass()).invoke(plot, chunkPosObj);
+                        if (contained) {
                              cir.setReturnValue(true);
                              return;
                         }

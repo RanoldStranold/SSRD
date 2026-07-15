@@ -26,11 +26,13 @@ public abstract class ChunkMapTrackedEntityMixin {
         String name = EntityType.getKey(this.entity.getType()).toString();
         boolean isContraption = name.startsWith("create:") || name.startsWith("aeronautics:") || name.startsWith("offroad:");
         if (isContraption && (name.contains("contraption") || name.contains("carriage") || name.contains("propeller"))) {
-            // Use SSRD's configured tracking range instead of a massive hardcoded value
-            int requestedRange = (int) Config.physicsTrackingRange;
-            if (requestedRange > this.range) {
-                this.range = requestedRange;
-                com.mojang.logging.LogUtils.getLogger().debug("SSRD: Contraption tracking range for {} set to {}", name, requestedRange);
+            if (ssrd$isInPlot(this.entity)) {
+                // Use SSRD's configured tracking range instead of a massive hardcoded value
+                int requestedRange = (int) Config.physicsTrackingRange;
+                if (requestedRange > this.range) {
+                    this.range = requestedRange;
+                    com.mojang.logging.LogUtils.getLogger().debug("SSRD: SubLevel Contraption tracking range for {} set to {}", name, requestedRange);
+                }
             }
         }
     }
@@ -40,10 +42,34 @@ public abstract class ChunkMapTrackedEntityMixin {
         String name = EntityType.getKey(this.entity.getType()).toString();
         boolean isContraption = name.startsWith("create:") || name.startsWith("aeronautics:") || name.startsWith("offroad:");
         if (isContraption && (name.contains("contraption") || name.contains("carriage") || name.contains("propeller"))) {
-            // Clamp to SSRD tracking range instead of vanilla viewDistance, but don't remove clamp entirely
-            int ssrdRange = (int) Config.physicsTrackingRange;
-            return Math.min(range, ssrdRange);
+            if (ssrd$isInPlot(this.entity)) {
+                // Clamp to SSRD tracking range instead of vanilla viewDistance, but don't remove clamp entirely
+                int ssrdRange = (int) Config.physicsTrackingRange;
+                return Math.min(range, ssrdRange);
+            }
         }
         return Math.min(range, viewDistanceBlocks);
+    }
+
+    @org.spongepowered.asm.mixin.Unique
+    private boolean ssrd$isInPlot(Entity entity) {
+        try {
+            net.minecraft.world.level.Level level = entity.level();
+            Object container = null;
+            for (java.lang.reflect.Method m : level.getClass().getMethods()) {
+                if (m.getName().equals("sable$getPlotContainer")) {
+                    m.setAccessible(true);
+                    container = m.invoke(level);
+                    break;
+                }
+            }
+            if (container != null) {
+                Object plot = container.getClass().getMethod("getPlot", net.minecraft.world.level.ChunkPos.class).invoke(container, entity.chunkPosition());
+                return plot != null;
+            }
+        } catch (Exception e) {
+            // Ignore reflection errors, default to false
+        }
+        return false;
     }
 }
