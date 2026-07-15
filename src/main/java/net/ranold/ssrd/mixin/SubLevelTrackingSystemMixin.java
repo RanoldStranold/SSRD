@@ -40,9 +40,7 @@ public class SubLevelTrackingSystemMixin {
         }
 
         boolean result = distSq < range * range;
-        if (result && distSq > 320 * 320) {
-            com.mojang.logging.LogUtils.getLogger().debug("SSRD: Allowing distant tracking for sub-level at {} for player {} (Range: {})", entityPosition, player.getName().getString(), range);
-        }
+
         cir.setReturnValue(result);
     }
 }
