@@ -21,35 +21,19 @@ public class ServerLevelMixin {
 
         final ChunkPos chunkPos = new ChunkPos(l);
         
+        // Direct API calls instead of reflection: reflective member enumeration on Sable's
+        // SubLevelContainer resolves getContainer(ClientLevel) and trips RuntimeDistCleaner
+        // on dedicated servers (Issue 43 log spam).
         try {
-            // Get container from level directly
-            Object container = null;
-            for (java.lang.reflect.Method m : ((net.minecraft.world.level.Level) (Object) this).getClass().getMethods()) {
-                if (m.getName().equals("sable$getPlotContainer")) {
-                    m.setAccessible(true);
-                    container = m.invoke((net.minecraft.world.level.Level) (Object) this);
-                    break;
-                }
-            }
+            dev.ryanhcode.sable.api.sublevel.ServerSubLevelContainer container =
+                    dev.ryanhcode.sable.api.sublevel.SubLevelContainer.getContainer((ServerLevel) (Object) this);
             if (container == null) return false;
 
-            java.lang.reflect.Field allSubLevelsField = container.getClass().getSuperclass().getDeclaredField("allSubLevels");
-            allSubLevelsField.setAccessible(true);
-            Iterable<?> allSubLevels = (Iterable<?>) allSubLevelsField.get(container);
-            
             // If any active sub-level has a contraption in this chunk, force tick it
-            for (Object slObj : allSubLevels) {
-                // Access plot field on SubLevel
-                java.lang.reflect.Field plotField = slObj.getClass().getSuperclass().getDeclaredField("plot");
-                plotField.setAccessible(true);
-                Object plot = plotField.get(slObj);
-                
-                // Access contraptions field on ServerLevelPlot
-                java.lang.reflect.Field contraptionsField = plot.getClass().getDeclaredField("contraptions");
-                contraptionsField.setAccessible(true);
-                java.util.Collection<?> contraptions = (java.util.Collection<?>) contraptionsField.get(plot);
-                
-                for (Object contraptionObj : contraptions) {
+            for (dev.ryanhcode.sable.sublevel.SubLevel subLevel : container.getAllSubLevels()) {
+                if (!(subLevel instanceof dev.ryanhcode.sable.sublevel.ServerSubLevel serverSubLevel)) continue;
+
+                for (Object contraptionObj : serverSubLevel.getPlot().getContraptions()) {
                     if (contraptionObj instanceof Entity e) {
                         if (e.chunkPosition().equals(chunkPos)) {
                             return true;
@@ -57,8 +41,8 @@ public class ServerLevelMixin {
                     }
                 }
             }
-        } catch (Exception e) {
-            // com.mojang.logging.LogUtils.getLogger().error("SSRD: Error in forceTickContraptionChunks", e);
+        } catch (Throwable t) {
+            // com.mojang.logging.LogUtils.getLogger().error("SSRD: Error in forceTickContraptionChunks", t);
         }
 
         return false;

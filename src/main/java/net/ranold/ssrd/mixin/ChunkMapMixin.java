@@ -23,32 +23,20 @@ public abstract class ChunkMapMixin {
         // If vanilla already tracks it, do nothing
         if (cir.getReturnValue()) return;
 
-        // Use pure reflection to avoid loading problematic Sable classes on server
+        // Direct API calls instead of reflection: reflective member enumeration on Sable's
+        // SubLevelContainer resolves getContainer(ClientLevel) and trips RuntimeDistCleaner
+        // on dedicated servers (Issue 43 log spam).
         try {
-            // Get container from level directly
-            Object container = null;
-            for (java.lang.reflect.Method m : this.level.getClass().getMethods()) {
-                if (m.getName().equals("sable$getPlotContainer")) {
-                    m.setAccessible(true);
-                    container = m.invoke(this.level);
-                    break;
-                }
-            }
+            dev.ryanhcode.sable.api.sublevel.ServerSubLevelContainer container =
+                    dev.ryanhcode.sable.api.sublevel.SubLevelContainer.getContainer(this.level);
             if (container == null) return;
 
             ChunkPos targetPos = new ChunkPos(x, z);
-            
-            java.lang.reflect.Field allSubLevelsField = container.getClass().getSuperclass().getDeclaredField("allSubLevels");
-            allSubLevelsField.setAccessible(true);
-            Iterable<?> allSubLevels = (Iterable<?>) allSubLevelsField.get(container);
-            
-            for (Object slObj : allSubLevels) {
-                // Access trackingPlayers field on ServerSubLevel
-                java.lang.reflect.Field trackingPlayersField = slObj.getClass().getDeclaredField("trackingPlayers");
-                trackingPlayersField.setAccessible(true);
-                java.util.Collection<java.util.UUID> trackingPlayers = (java.util.Collection<java.util.UUID>) trackingPlayersField.get(slObj);
-                
-                if (trackingPlayers.contains(player.getUUID())) {
+
+            for (dev.ryanhcode.sable.sublevel.SubLevel subLevel : container.getAllSubLevels()) {
+                if (!(subLevel instanceof dev.ryanhcode.sable.sublevel.ServerSubLevel serverSubLevel)) continue;
+
+                if (serverSubLevel.getTrackingPlayers().contains(player.getUUID())) {
                     // SSRD: Only force chunk tracking if player has the mod
                     boolean hasMod = false;
                     if (ssrd.playerRequestedRanges.containsKey(player)) {
@@ -61,17 +49,9 @@ public abstract class ChunkMapMixin {
                         continue;
                     }
 
-                    // Access plot field on SubLevel
-                    java.lang.reflect.Field plotField = slObj.getClass().getSuperclass().getDeclaredField("plot");
-                    plotField.setAccessible(true);
-                    Object plot = plotField.get(slObj);
-                    
-                    // Access contraptions field on ServerLevelPlot
-                    java.lang.reflect.Field contraptionsField = plot.getClass().getDeclaredField("contraptions");
-                    contraptionsField.setAccessible(true);
-                    java.util.Collection<?> contraptions = (java.util.Collection<?>) contraptionsField.get(plot);
-                    
-                    for (Object cObj : contraptions) {
+                    dev.ryanhcode.sable.sublevel.plot.ServerLevelPlot plot = serverSubLevel.getPlot();
+
+                    for (Object cObj : plot.getContraptions()) {
                         if (cObj instanceof Entity entity) {
                             if (entity.chunkPosition().equals(targetPos)) {
                                 cir.setReturnValue(true);
@@ -82,18 +62,14 @@ public abstract class ChunkMapMixin {
 
                     // SPATIAL FALLBACK: If the chunk is within the sub-level's plot, track it.
                     // This ensures any entities in the plot are tracked even if not in the contraptions list.
-                    try {
-                        Object chunkPosObj = Class.forName("net.minecraft.world.level.ChunkPos").getConstructor(int.class, int.class).newInstance(x, z);
-                        boolean contained = (boolean) plot.getClass().getMethod("contains", chunkPosObj.getClass()).invoke(plot, chunkPosObj);
-                        if (contained) {
-                             cir.setReturnValue(true);
-                             return;
-                        }
-                    } catch (Exception ignored) {}
+                    if (plot.contains(targetPos)) {
+                        cir.setReturnValue(true);
+                        return;
+                    }
                 }
             }
-        } catch (Exception e) {
-            // com.mojang.logging.LogUtils.getLogger().error("SSRD: Error in forceTrackContraptionChunks", e);
+        } catch (Throwable t) {
+            // com.mojang.logging.LogUtils.getLogger().error("SSRD: Error in forceTrackContraptionChunks", t);
         }
     }
 }

@@ -50,6 +50,9 @@ neoForge {
 dependencies {
     compileOnly files("repos/sodium/neoforge/build/libs/sodium-neoforge-0.8.12+mc1.21.1-mod.jar")
     implementation files("run/mods/sable-neoforge-1.21.1-2.0.3.jar")
+    // Sable's companion library is jarjar'd inside the Sable jar at runtime; needed on the
+    // compile classpath to resolve SubLevel's type hierarchy (implements SubLevelAccess)
+    compileOnly files("libs/sable-companion-common-1.21.1-1.6.0.jar")
     compileOnly "maven.modrinth:distanthorizons:3.1.0-b-1.21.1"
 
     compileOnly "dev.engine-room.flywheel:flywheel-neoforge-api-1.21.1:1.0.6"

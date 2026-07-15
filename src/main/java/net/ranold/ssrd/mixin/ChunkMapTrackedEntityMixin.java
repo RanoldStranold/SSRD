@@ -53,23 +53,15 @@ public abstract class ChunkMapTrackedEntityMixin {
 
     @org.spongepowered.asm.mixin.Unique
     private boolean ssrd$isInPlot(Entity entity) {
+        // Direct API call instead of reflection: reflective method enumeration on Sable's
+        // SubLevelContainer resolves getContainer(ClientLevel) and trips RuntimeDistCleaner
+        // on dedicated servers (Issue 43 log spam), silently breaking this check.
         try {
-            net.minecraft.world.level.Level level = entity.level();
-            Object container = null;
-            for (java.lang.reflect.Method m : level.getClass().getMethods()) {
-                if (m.getName().equals("sable$getPlotContainer")) {
-                    m.setAccessible(true);
-                    container = m.invoke(level);
-                    break;
-                }
-            }
-            if (container != null) {
-                Object plot = container.getClass().getMethod("getPlot", net.minecraft.world.level.ChunkPos.class).invoke(container, entity.chunkPosition());
-                return plot != null;
-            }
-        } catch (Exception e) {
-            // Ignore reflection errors, default to false
+            dev.ryanhcode.sable.api.sublevel.SubLevelContainer container =
+                    dev.ryanhcode.sable.api.sublevel.SubLevelContainer.getContainer(entity.level());
+            return container != null && container.getPlot(entity.chunkPosition()) != null;
+        } catch (Throwable t) {
+            return false;
         }
-        return false;
     }
 }
