@@ -23,3 +23,8 @@ backup_mods/
 sable_classes.txt
 sodium_classes.txt
 sable.accesswidener
+
+# Claude
+claude.md
+CLAUDE.md
+.claude/

@@ -6,6 +6,8 @@ import net.caffeinemc.mods.sodium.api.config.option.OptionImpact;
 import net.caffeinemc.mods.sodium.client.gui.SodiumConfigBuilder;
 import net.caffeinemc.mods.sodium.client.gui.options.control.ControlValueFormatterImpls;
 import net.caffeinemc.mods.sodium.api.config.StorageEventHandler;
+import net.caffeinemc.mods.sodium.api.config.ConfigState;
+import net.caffeinemc.mods.sodium.api.config.option.Range;
 import net.ranold.ssrd.Config;
 import net.ranold.ssrd.ClientConfigSyncPacket;
 import net.minecraft.network.chat.Component;
@@ -37,7 +39,37 @@ public class SodiumConfigBuilderMixin {
     private OptionPageBuilder injectPhysicsRenderDistance(OptionPageBuilder page, net.caffeinemc.mods.sodium.api.config.structure.OptionGroupBuilder group) {
         ConfigBuilder builder = CURRENT_BUILDER.get();
 
-        int minDistance = Config.minPhysicsRenderDistance;
+        final int finalMin = Config.minPhysicsRenderDistance;
+
+        group.addOption(
+            builder.createIntegerOption(ResourceLocation.parse("ssrd:general.physics_render_distance"))
+                .setStorageHandler(SSRD_STORAGE)
+                .setName(Component.translatable("ssrd.options.physics_render_distance.name"))
+                .setTooltip(Component.translatable("ssrd.options.physics_render_distance.tooltip"))
+                .setValueFormatter(ControlValueFormatterImpls.translateVariable("options.chunks"))
+                // Re-queried every time the video settings screen opens (UPDATE_ON_REBUILD),
+                // so the slider max follows the current DH/Voxy LOD distance without a relaunch.
+                .setRangeProvider(
+                    (state) -> new Range(finalMin, ssrd$queryLodMaxDistance(finalMin), 1),
+                    ConfigState.UPDATE_ON_REBUILD
+                )
+                .setDefaultProvider(
+                    (state) -> ssrd$queryLodMaxDistance(finalMin),
+                    ConfigState.UPDATE_ON_REBUILD
+                )
+                .setBinding((value) -> {
+                    Config.setPhysicsRenderDistance(value);
+                    if (net.minecraft.client.Minecraft.getInstance().getConnection() != null) {
+                        net.neoforged.neoforge.network.PacketDistributor.sendToServer(new ClientConfigSyncPacket(value));
+                    }
+                }, () -> Math.min(Config.physicsRenderDistance, ssrd$queryLodMaxDistance(finalMin)))
+                .setImpact(OptionImpact.MEDIUM)
+        );
+
+        return page.addOptionGroup(group);
+    }
+
+    private static int ssrd$queryLodMaxDistance(int minDistance) {
         int maxDistance = Config.maxPhysicsRenderDistance;
 
         try {
@@ -48,34 +80,22 @@ public class SodiumConfigBuilderMixin {
                     Object graphics = configs.getClass().getMethod("graphics").invoke(configs);
                     Object chunkDist = graphics.getClass().getMethod("chunkRenderDistance").invoke(graphics);
                     maxDistance = (int) chunkDist.getClass().getMethod("getValue").invoke(chunkDist);
+                    return Math.max(minDistance + 1, maxDistance);
                 }
             }
         } catch (Throwable ignored) {}
 
-        final int finalMin = minDistance;
-        final int finalMax = Math.max(finalMin + 1, maxDistance);
+        try {
+            Class<?> voxyConfigClass = Class.forName("me.cortex.voxy.client.config.VoxyConfig");
+            Object voxyConfig = voxyConfigClass.getField("CONFIG").get(null);
+            if (voxyConfig != null) {
+                // Voxy stores distance as a float in top-level sections; its own menu
+                // displays round(sectionRenderDistance * 16) * 2 as the chunk distance.
+                float sectionDist = voxyConfigClass.getField("sectionRenderDistance").getFloat(voxyConfig);
+                maxDistance = Math.round(sectionDist * 16.0f) * 2;
+            }
+        } catch (Throwable ignored) {}
 
-        int current = Config.physicsRenderDistance;
-        if (current < finalMin) current = finalMin;
-        if (current > finalMax) current = finalMax;
-
-        group.addOption(
-            builder.createIntegerOption(ResourceLocation.parse("ssrd:general.physics_render_distance"))
-                .setStorageHandler(SSRD_STORAGE)
-                .setName(Component.translatable("ssrd.options.physics_render_distance.name"))
-                .setTooltip(Component.translatable("ssrd.options.physics_render_distance.tooltip"))
-                .setValueFormatter(ControlValueFormatterImpls.translateVariable("options.chunks"))
-                .setRange(finalMin, Math.max(finalMin + 1, finalMax), 1)
-                .setDefaultValue(finalMax)
-                .setBinding((value) -> {
-                    Config.setPhysicsRenderDistance(value);
-                    if (net.minecraft.client.Minecraft.getInstance().getConnection() != null) {
-                        net.neoforged.neoforge.network.PacketDistributor.sendToServer(new ClientConfigSyncPacket(value));
-                    }
-                }, () -> Math.min(Config.physicsRenderDistance, finalMax))
-                .setImpact(OptionImpact.MEDIUM)
-        );
-
-        return page.addOptionGroup(group);
+        return Math.max(minDistance + 1, maxDistance);
     }
 }

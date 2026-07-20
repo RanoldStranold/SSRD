@@ -1,10 +1,12 @@
 package net.ranold.ssrd.mixin;
 
 import net.minecraft.client.renderer.GameRenderer;
+import net.ranold.ssrd.SSRDState;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(GameRenderer.class)
@@ -30,6 +32,17 @@ public class GameRendererProjMixin {
             largeProj.m32(-(2.0f * far * near) / (far - near));
         }
         
+        SSRDState.PURE_PROJ_MATRIX = new Matrix4f(largeProj);
         cir.setReturnValue(largeProj);
+    }
+
+    @Inject(method = "resetProjectionMatrix", at = @At("HEAD"))
+    private void ssd$captureLevelProj(Matrix4f matrix, CallbackInfo ci) {
+        // Only the level pass goes through resetProjectionMatrix with a perspective
+        // matrix (m33 == 0); GUI ortho matrices go to RenderSystem directly. This
+        // matrix already contains this frame's view-bob transform (issue #37).
+        if (matrix.m33() == 0.0f) {
+            SSRDState.LEVEL_PROJ_MATRIX = new Matrix4f(matrix);
+        }
     }
 }
