@@ -25,6 +25,12 @@ public class ClientModEvents {
         // Register forge bus events manually to hide client class references from the server scanner
         NeoForge.EVENT_BUS.addListener(ClientModEvents::onEntityJoin);
         NeoForge.EVENT_BUS.addListener(ClientModEvents::onRegisterClientCommands);
+        NeoForge.EVENT_BUS.addListener(ClientModEvents::onLoggingOut);
+    }
+
+    public static void onLoggingOut(net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) {
+        // Forget the previous server's distance cap so it doesn't limit the slider in menus/other worlds
+        net.ranold.ssrd.ssrd.serverMaxTrackingChunks = -1;
     }
 
     public static void onRegisterClientCommands(net.neoforged.neoforge.client.event.RegisterClientCommandsEvent event) {

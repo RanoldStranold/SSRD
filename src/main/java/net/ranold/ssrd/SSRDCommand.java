@@ -39,6 +39,8 @@ public class SSRDCommand {
                             .then(Commands.literal("list")
                                     .executes(SSRDCommand::listForceload))
                     )
+                    .then(Commands.literal("help")
+                            .executes(SSRDCommand::showHelp))
             );
         } catch (Exception e) {
             com.mojang.logging.LogUtils.getLogger().error("SSRD: Failed to register commands", e);
@@ -146,6 +148,52 @@ public class SSRDCommand {
         } catch (Exception e) {
             context.getSource().sendFailure(Component.literal("Error: " + e.getMessage()));
             return 0;
+        }
+    }
+
+    private static int showHelp(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+
+        int forceloadLimit = SSRDGameRules.DEFAULT_FORCELOAD_LIMIT;
+        int maxRenderDistance = SSRDGameRules.DEFAULT_MAX_RENDER_DISTANCE;
+        boolean dedicated = false;
+        if (source.getServer() != null) {
+            forceloadLimit = source.getServer().getGameRules().getInt(SSRDGameRules.RULE_SSRD_FORCELOAD_LIMIT);
+            maxRenderDistance = source.getServer().getGameRules().getInt(SSRDGameRules.RULE_SSRD_MAX_RENDER_DISTANCE);
+            dedicated = source.getServer().isDedicatedServer();
+        }
+
+        source.sendSuccess(() -> Component.literal("§6=== SSRD Commands ==="), false);
+        source.sendSuccess(() -> Component.literal("§e/ssrd forceload add <sub_levels>§r - Keeps the selected sub-levels loaded and visible even when no players are nearby. Counts toward your per-player limit."), false);
+        source.sendSuccess(() -> Component.literal("§e/ssrd forceload remove <sub_levels>§r - Removes your forceload tickets from the selected sub-levels."), false);
+        source.sendSuccess(() -> Component.literal("§e/ssrd forceload list§r - Lists the sub-levels you have forceloaded and your limit (used/max)."), false);
+        source.sendSuccess(() -> Component.literal("§e/ssrd config§r - (Client) Opens the SSRD screen to set your physics render distance manually. Also available as a slider in Sodium's video settings."), false);
+
+        final String forceloadLine = "§e/gamerule ssrdForceloadLimit§r - Maximum sub-levels each player can forceload. Current: §b" + forceloadLimit + "§r, Default: §7" + SSRDGameRules.DEFAULT_FORCELOAD_LIMIT;
+        source.sendSuccess(() -> Component.literal("§6=== SSRD Gamerules ==="), false);
+        source.sendSuccess(() -> Component.literal(forceloadLine), false);
+        if (dedicated) {
+            // The cap never applies to the singleplayer host, so only mention it on dedicated servers
+            final String maxDistLine = "§e/gamerule ssrdMaxRenderDistance§r - Server-wide cap (in chunks) on the physics render distance clients can request. Current: §b" + maxRenderDistance + "§r, Default: §7" + SSRDGameRules.DEFAULT_MAX_RENDER_DISTANCE;
+            source.sendSuccess(() -> Component.literal(maxDistLine), false);
+        }
+        return 1;
+    }
+
+    /** Removes ssrdMaxRenderDistance from the /gamerule command tree (used on integrated servers, where the cap never applies to the host). */
+    public static void hideMaxRenderDistanceGamerule(CommandDispatcher<CommandSourceStack> dispatcher) {
+        try {
+            com.mojang.brigadier.tree.CommandNode<CommandSourceStack> gamerule = dispatcher.getRoot().getChild("gamerule");
+            if (gamerule == null) return;
+
+            java.lang.reflect.Field childrenField = com.mojang.brigadier.tree.CommandNode.class.getDeclaredField("children");
+            java.lang.reflect.Field literalsField = com.mojang.brigadier.tree.CommandNode.class.getDeclaredField("literals");
+            childrenField.setAccessible(true);
+            literalsField.setAccessible(true);
+            ((java.util.Map<?, ?>) childrenField.get(gamerule)).remove("ssrdMaxRenderDistance");
+            ((java.util.Map<?, ?>) literalsField.get(gamerule)).remove("ssrdMaxRenderDistance");
+        } catch (Exception e) {
+            com.mojang.logging.LogUtils.getLogger().warn("SSRD: Could not hide ssrdMaxRenderDistance gamerule on integrated server", e);
         }
     }
 

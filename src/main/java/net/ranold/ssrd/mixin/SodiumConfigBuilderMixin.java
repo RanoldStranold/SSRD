@@ -70,32 +70,6 @@ public class SodiumConfigBuilderMixin {
     }
 
     private static int ssrd$queryLodMaxDistance(int minDistance) {
-        int maxDistance = Config.maxPhysicsRenderDistance;
-
-        try {
-            if (net.neoforged.fml.loading.LoadingModList.get().getModFileById("distanthorizons") != null) {
-                Class<?> delayedClass = Class.forName("com.seibel.distanthorizons.api.DhApi$Delayed");
-                Object configs = delayedClass.getField("configs").get(null);
-                if (configs != null) {
-                    Object graphics = configs.getClass().getMethod("graphics").invoke(configs);
-                    Object chunkDist = graphics.getClass().getMethod("chunkRenderDistance").invoke(graphics);
-                    maxDistance = (int) chunkDist.getClass().getMethod("getValue").invoke(chunkDist);
-                    return Math.max(minDistance + 1, maxDistance);
-                }
-            }
-        } catch (Throwable ignored) {}
-
-        try {
-            Class<?> voxyConfigClass = Class.forName("me.cortex.voxy.client.config.VoxyConfig");
-            Object voxyConfig = voxyConfigClass.getField("CONFIG").get(null);
-            if (voxyConfig != null) {
-                // Voxy stores distance as a float in top-level sections; its own menu
-                // displays round(sectionRenderDistance * 16) * 2 as the chunk distance.
-                float sectionDist = voxyConfigClass.getField("sectionRenderDistance").getFloat(voxyConfig);
-                maxDistance = Math.round(sectionDist * 16.0f) * 2;
-            }
-        } catch (Throwable ignored) {}
-
-        return Math.max(minDistance + 1, maxDistance);
+        return net.ranold.ssrd.client.DistanceLimits.query(minDistance).chunks();
     }
 }

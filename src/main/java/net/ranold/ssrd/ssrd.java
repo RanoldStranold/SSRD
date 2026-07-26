@@ -51,8 +51,17 @@ public class ssrd {
                 (payload, context) -> {
                     context.enqueueWork(() -> {
                         if (context.player() instanceof ServerPlayer sp) {
-                            playerRequestedRanges.put(sp, payload.requestedRangeChunks());
-                            LOGGER.info("SSRD: Received range request from player {}: {} chunks", sp.getScoreboardName(), payload.requestedRangeChunks());
+                            // The singleplayer/LAN host is never capped by the gamerule
+                            int cap = sp.server.isSingleplayerOwner(sp.getGameProfile())
+                                    ? Integer.MAX_VALUE
+                                    : getServerMaxRenderDistance(sp.server);
+                            int granted = Math.min(payload.requestedRangeChunks(), cap);
+                            playerRequestedRanges.put(sp, granted);
+                            if (granted != payload.requestedRangeChunks()) {
+                                LOGGER.info("SSRD: Received range request from player {}: {} chunks (clamped to server max {})", sp.getScoreboardName(), payload.requestedRangeChunks(), cap);
+                            } else {
+                                LOGGER.info("SSRD: Received range request from player {}: {} chunks", sp.getScoreboardName(), granted);
+                            }
                         }
                     });
                 }
@@ -65,6 +74,25 @@ public class ssrd {
         return (int) Math.ceil(Config.physicsTrackingRange / 16.0);
     }
 
+    public static int getServerMaxRenderDistance(net.minecraft.server.MinecraftServer server) {
+        if (SSRDGameRules.RULE_SSRD_MAX_RENDER_DISTANCE == null) {
+            return SSRDGameRules.DEFAULT_MAX_RENDER_DISTANCE;
+        }
+        return server.getGameRules().getInt(SSRDGameRules.RULE_SSRD_MAX_RENDER_DISTANCE);
+    }
+
+    /** Called when the ssrdMaxRenderDistance gamerule changes: re-clamp stored requests and re-sync the cap to clients. */
+    public static void onMaxRenderDistanceChanged(net.minecraft.server.MinecraftServer server, int newCap) {
+        playerRequestedRanges.replaceAll((player, requested) ->
+                player.server.isSingleplayerOwner(player.getGameProfile()) ? requested : Math.min(requested, newCap));
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            if (hasMod(player)) {
+                net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(player, new ServerConfigSyncPacket(newCap));
+            }
+        }
+        LOGGER.info("SSRD: Max render distance gamerule changed to {} chunks; re-synced {} player(s).", newCap, server.getPlayerList().getPlayerCount());
+    }
+
     public void onCommonSetup(net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
             SSRDGameRules.register();
@@ -74,13 +102,18 @@ public class ssrd {
     @SubscribeEvent
     public void onRegisterCommands(net.neoforged.neoforge.event.RegisterCommandsEvent event) {
         SSRDCommand.register(event.getDispatcher());
+        // The max render distance cap never applies to the singleplayer host, so hide
+        // its gamerule from /gamerule on integrated servers to avoid confusion.
+        if (event.getCommandSelection() == net.minecraft.commands.Commands.CommandSelection.INTEGRATED) {
+            SSRDCommand.hideMaxRenderDistanceGamerule(event.getDispatcher());
+        }
     }
 
     @SubscribeEvent
     public void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer serverPlayer) {
             if (hasMod(serverPlayer)) {
-                int chunks = (int) Math.ceil(Config.physicsTrackingRange / 16.0);
+                int chunks = getServerMaxRenderDistance(serverPlayer.server);
                 net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(serverPlayer, new ServerConfigSyncPacket(chunks));
             } else {
                 LOGGER.info("SSRD: Client {} does not have SSRD, skipping sync.", serverPlayer.getScoreboardName());

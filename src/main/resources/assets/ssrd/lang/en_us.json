@@ -12,7 +12,7 @@
   "ssrd.config.physics_render_distance": "Sub-Level Distance",
   "ssrd.log.physics_render_distance_set": "SSRD: Physics Render Distance set to %s (Tracking Range: %s)",
   "ssrd.log.initialized": "SSRD: Initialized v0.5.2 (Standard Mode)",
-  "ssrd.screen.config.title": "SSRD Render Settings (Outdated unless using Voxy)",
+  "ssrd.screen.config.title": "SSRD Render Settings (Outdated, use the slider in Video settings instead)",
   "ssrd.ui.current_distance": "Current: %s chunks",
   "ssrd.ui.button.chunk_count": "%s Chunks"
 }

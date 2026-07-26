@@ -12,7 +12,7 @@
     "ssrd.config.physics_render_distance": "子场景距离",
     "ssrd.log.physics_render_distance_set": "SSRD：物理渲染距离已设置为 %s（追踪范围：%s）",
     "ssrd.log.initialized": "SSRD：已初始化 v0.5.2（标准模式）",
-    "ssrd.screen.config.title": "SSRD 渲染设置（已废弃，除非使用 Voxy）",
+    "ssrd.screen.config.title": "SSRD 渲染设置（已过时，请改用视频设置中的滑块）",
     "ssrd.ui.current_distance": "当前：%s 个区块",
     "ssrd.ui.button.chunk_count": "%s 个区块"
 }
