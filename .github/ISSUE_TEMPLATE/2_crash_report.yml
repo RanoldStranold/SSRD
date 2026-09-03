@@ -16,7 +16,7 @@ body:
     attributes:
       label: "Crash Log"
       description: "Paste a link to the full crash log/latest.log (mclo.gs, gist, pastebin, etc)"
-      placeholder: ""
+      placeholder: "https://mclo.gs/..."
     validations:
       required: true
   - type: textarea
