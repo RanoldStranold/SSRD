@@ -11,4 +11,4 @@ body:
       description: "Please provide a clear and concise description of whatever it is you're requesting"
       placeholder: "cmon lets hear it"
     validations:
-      required: false
+      required: true

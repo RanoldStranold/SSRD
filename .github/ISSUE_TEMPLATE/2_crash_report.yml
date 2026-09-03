@@ -1,0 +1,37 @@
+name: Crash
+description: Report a crash caused by SSRD
+title: "[Crash]: "
+labels: ["crash"]
+body:
+  - type: input
+    id: mod-version
+    attributes:
+      label: "Mod Version"
+      description: "What version of SSRD are you using?"
+      placeholder: "e.g., v1.8"
+    validations:
+      required: true
+  - type: textarea
+    id: crash-log
+    attributes:
+      label: "Crash Log"
+      description: "Paste a link to the full crash log/latest.log (mclo.gs, gist, pastebin, etc)"
+      placeholder: ""
+    validations:
+      required: true
+  - type: textarea
+    id: modlist
+    attributes:
+      label: "Modlist"
+      description: "A full list of every mod installed"
+      placeholder: "Paste modlist here"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: "What were you doing when it crashed?"
+      description: "Steps to reproduce, if you needed"
+      placeholder: "C'mon let's here it"
+    validations:
+      required: true
