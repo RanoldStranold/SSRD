@@ -32,6 +32,6 @@ body:
     attributes:
       label: "What were you doing when it crashed?"
       description: "Steps to reproduce, if you needed"
-      placeholder: "C'mon let's here it"
+      placeholder: "I was working in the lab late one night..."
     validations:
       required: true
