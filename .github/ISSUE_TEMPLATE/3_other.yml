@@ -1,6 +1,6 @@
-name: Bug Report
-description: File a bug report
-title: "[Bug]: "
+name: Other
+description: Ex. Sub-levels not rendering properly, or anything else that isn't a crash or feature request
+title: "[Other]: "
 labels: ["bug"]
 body:
   - type: input
@@ -22,8 +22,15 @@ body:
   - type: textarea
     id: description
     attributes:
-      label: "Description of the Bug"
-      description: "Please provide a clear and concise description of what the bug is, what happens, and how to reproduce it if necesary."
+      label: "Description"
+      description: "Any information you find relevant, could be a log file or complete modlist"
       placeholder: "Describe the issue here..."
     validations:
       required: true
+  - type: checkboxes
+    id: forceload-confirmation
+    attributes:
+      label: "I can read"
+      options:
+        - label: "If sub-levels aren't rendering past the vanilla render distance, I did attempt to forceload them using /ssrd forceload"
+          required: true
