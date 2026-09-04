@@ -28,3 +28,6 @@ sable.accesswidener
 claude.md
 CLAUDE.md
 .claude/
+
+# Machine-local dev conveniences (absolute paths specific to this machine)
+local.gradle

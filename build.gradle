@@ -91,6 +91,10 @@ tasks.named('jar', Jar) {
     archiveFileName = "SSRD-${project.mod_version}-${project.minecraft_version}.jar"
 }
 
+if (file('local.gradle').exists()) {
+    apply from: 'local.gradle'
+}
+
 idea {
     module {
         downloadSources = true
