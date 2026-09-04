@@ -1,6 +1,6 @@
-name: Other
+name: Bug
 description: Ex. Sub-levels not rendering properly, or anything else that isn't a crash or feature request
-title: "[Other]: "
+title: "[Bug]: "
 labels: ["bug"]
 body:
   - type: input
