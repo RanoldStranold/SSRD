@@ -13,9 +13,7 @@ public interface BlockEntityRendererMixin {
 
     @Inject(method = "getViewDistance", at = @At("RETURN"), cancellable = true)
     private void ssd$overrideBlockEntityViewDistance(CallbackInfoReturnable<Integer> cir) {
-        // Create sets many BE distances to 128 or 64. We want to bypass this if physics render distance is high.
-        // physicsRenderDistance is in blocks (e.g. 512)
-        int minDistance = Config.physicsRenderDistance;
+        int minDistance = (int) Config.physicsTrackingRange;
         int current = cir.getReturnValue() != null ? cir.getReturnValue() : 64;
         
         if (minDistance > current) {

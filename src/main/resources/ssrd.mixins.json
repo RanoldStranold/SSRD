@@ -29,7 +29,6 @@
     "AbstractContraptionEntityMixin",
     "AbstractEntityVisualMixin",
     "AbstractBlockEntityVisualMixin",
-    "ClientLevelMixin",
     "BandedPrimeLimiterMixin",
     "FrameUniformsMixin"
   ],

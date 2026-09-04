@@ -41,7 +41,6 @@ public abstract class SubLevelHoldingChunkMapMixin {
                 double dx = player.getX() - centerX;
                 double dz = player.getZ() - centerZ;
                 if (dx * dx + dz * dz < rangeSq) {
-                    com.mojang.logging.LogUtils.getLogger().debug("SSRD: Preventing sub-level unload for chunk {} near player {} (Range: {})", pos, player.getName().getString(), range);
                     ci.cancel();
                     return;
                 }

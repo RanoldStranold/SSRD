@@ -13,23 +13,20 @@ import net.ranold.ssrd.ClientConfigSyncPacket;
 import net.ranold.ssrd.Config;
 
 
-@EventBusSubscriber(modid = "ssrd", bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(modid = "ssrd", value = Dist.CLIENT)
 public class ClientModEvents {
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
-        // Register config screen
         net.neoforged.fml.ModList.get().getModContainerById("ssrd").ifPresent(container -> {
             container.registerExtensionPoint(IConfigScreenFactory.class, (c, lastScreen) -> new ConfigScreen(lastScreen));
         });
 
-        // Register forge bus events manually to hide client class references from the server scanner
         NeoForge.EVENT_BUS.addListener(ClientModEvents::onEntityJoin);
         NeoForge.EVENT_BUS.addListener(ClientModEvents::onRegisterClientCommands);
         NeoForge.EVENT_BUS.addListener(ClientModEvents::onLoggingOut);
     }
 
     public static void onLoggingOut(net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) {
-        // Forget the previous server's distance cap so it doesn't limit the slider in menus/other worlds
         net.ranold.ssrd.ssrd.serverMaxTrackingChunks = -1;
     }
 
