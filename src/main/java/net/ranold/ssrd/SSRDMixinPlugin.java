@@ -37,7 +37,6 @@ public class SSRDMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-        // Skip DH-specific mixins if DH is not loaded
         if (mixinClassName.contains("DH") || mixinClassName.contains("DistantHorizons")) {
             if (!isDHLoaded) {
                 return false;
@@ -45,8 +44,7 @@ public class SSRDMixinPlugin implements IMixinConfigPlugin {
         }
 
         if (FMLEnvironment.dist == Dist.DEDICATED_SERVER) {
-            // Block any mixin that is in the client list or looks like a client mixin
-            if (mixinClassName.contains("client") || 
+            if (mixinClassName.contains("client") ||
                 mixinClassName.contains("Viewport") || 
                 mixinClassName.contains("Sodium") || 
                 mixinClassName.contains("LevelRenderer") ||
@@ -54,7 +52,6 @@ public class SSRDMixinPlugin implements IMixinConfigPlugin {
                 mixinClassName.contains("VanillaDispatcher") ||
                 mixinClassName.contains("EntityRenderDispatcher") ||
                 mixinClassName.contains("BlockEntityRenderer") ||
-                mixinClassName.contains("ClientLevelMixin") ||
                 mixinClassName.contains("OcclusionCuller")) {
                 return false;
             }
