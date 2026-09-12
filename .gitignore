@@ -24,10 +24,8 @@ sable_classes.txt
 sodium_classes.txt
 sable.accesswidener
 
-# Claude
-claude.md
-CLAUDE.md
-.claude/
-
 # Machine-local dev conveniences (absolute paths specific to this machine)
 local.gradle
+
+# Issue tracking notes (local only)
+issues/
